@@ -1,12 +1,13 @@
 #include "Blinker.h"
 #include <cassert>
 
-Blinker::Blinker(ILed &led, unsigned long intervalMs)
-    : led(led), intervalMs(intervalMs), task(createTask()) {}
+Blinker::Blinker(ILed &led, unsigned long intervalMs, TaskFactory factory)
+    : led(led), intervalMs(intervalMs), factory(factory), task(nullptr) {}
 
 std::unique_ptr<IPeriodicTask> Blinker::createTask()
 {
-    // Non viene mai usato in test, ma serve per la vtable
+    if (factory)
+        return factory();
     return nullptr;
 }
 
@@ -14,7 +15,11 @@ void Blinker::start()
 {
     if (running)
         return;
-    assert(task && "task is null — did you forget to override createTask()?");
+
+    if (!task && factory)
+        task = factory();
+
+    assert(task.get() != nullptr && "Task must be created before starting the Blinker");
     running = true;
 
     _loopFunction = [this](void *)

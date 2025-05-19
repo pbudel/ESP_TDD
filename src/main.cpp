@@ -1,21 +1,28 @@
 #include <Arduino.h>
+#include <Core/Blinker/Blinker.h>
 
-// put function declarations here:
-int myFunction(int, int);
+#include <ESP32C3_Platform/Led/Led.h>
+#include <ESP32C3_Platform/PeriodicTask/PeriodicTask.h>
+
+Led led(8);
+auto factory = []()
+{
+  return std::unique_ptr<IPeriodicTask>(new PeriodicTask()); // or your actual class name
+};
+Blinker blinker(led, 50, factory);
 
 void setup()
 {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(115200);
+  Serial.println("Starting...");
+
+  blinker.start();
+
+  Serial.println("Blinker started");
 }
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y)
-{
-  return x + y;
+  vTaskDelay(5000 / portTICK_PERIOD_MS);
+  Serial.println("Looping...");
 }

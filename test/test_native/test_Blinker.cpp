@@ -9,7 +9,7 @@
 class TestableBlinker : public Blinker
 {
 public:
-    TestableBlinker(ILed &led, std::unique_ptr<IPeriodicTask> mockTask, unsigned long intervalMs = 500)
+    TestableBlinker(ILed &led, unsigned long intervalMs = 500, std::unique_ptr<IPeriodicTask> mockTask = nullptr)
         : Blinker(led, intervalMs)
     {
         this->task = std::move(mockTask);
@@ -21,19 +21,21 @@ public:
 TEST_CASE("Blinker start configures periodic task and toggles LED")
 {
     auto mockTask = std::unique_ptr<MockPeriodicTask>(new MockPeriodicTask());
-    auto *taskPtr = mockTask.get(); // per accedere a storedHandler dopo start()
+    auto *taskPtr = mockTask.get();
 
-    MockLed led;
-    TestableBlinker blinker(led, std::move(mockTask), 1000);
+    MockLed led(1);
+    TestableBlinker blinker(led, 1000, std::move(mockTask));
 
     blinker.start();
 
-    // Verifica che il task sia stato configurato
+    REQUIRE_MESSAGE(taskPtr->storedHandler, "Handler was not set before use");
+
+    // Check that the task has been configured
     CHECK(taskPtr->startCalled);
     CHECK(taskPtr->interval == 1000);
-    REQUIRE(taskPtr->storedHandler); // handler assegnato
+    REQUIRE(taskPtr->storedHandler); // handler assigned
 
-    // Simulazione chiamata periodica
+    // Simulate periodic call
     taskPtr->storedHandler(nullptr);
     bool toggled = led.onCalled || led.offCalled;
     CHECK_MESSAGE(toggled, "LED should have been toggled on or off");
@@ -44,23 +46,25 @@ TEST_CASE("Blinker toggles LED state on repeated handler calls")
     auto mockTask = std::unique_ptr<MockPeriodicTask>(new MockPeriodicTask());
     auto *taskPtr = mockTask.get();
 
-    MockLed led;
-    TestableBlinker blinker(led, std::move(mockTask), 500);
+    MockLed led(1);
+    TestableBlinker blinker(led, 500, std::move(mockTask));
 
     blinker.start();
+    REQUIRE_MESSAGE(taskPtr->storedHandler, "Handler was not set before use");
+    taskPtr->storedHandler(nullptr); // sicuro
     REQUIRE(taskPtr->storedHandler);
 
-    // Prima chiamata accende
+    // First call turns on
     taskPtr->storedHandler(nullptr);
     CHECK(led.onCalled);
     led.onCalled = false;
 
-    // Seconda chiamata spegne
+    // Second call turns off
     taskPtr->storedHandler(nullptr);
     CHECK(led.offCalled);
     led.offCalled = false;
 
-    // Terza chiamata accende di nuovo
+    // Third call turns on again
     taskPtr->storedHandler(nullptr);
     CHECK(led.onCalled);
 }

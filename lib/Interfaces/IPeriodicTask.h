@@ -4,6 +4,7 @@
 class IPeriodicTask
 {
 public:
+    IPeriodicTask() {};
     virtual void startTask() = 0;
     virtual void stopTask() = 0;
     virtual void setInterval(unsigned long ms_interval) = 0;

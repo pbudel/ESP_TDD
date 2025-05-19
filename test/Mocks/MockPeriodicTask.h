@@ -7,7 +7,7 @@ public:
     bool startCalled = false;
     bool stopCalled = false;
     unsigned long interval = 0;
-    std::function<void(void *)> storedHandler;
+    std::function<void(void *)> storedHandler = nullptr;
 
     void startTask() override
     {
