@@ -91,7 +91,7 @@ Recommended cycle:
 ## 💡 Tips
 
 - Use `pio test -e native` for fast feedback on host
-- Explore [Unity](https://docs.platformio.org/en/latest/frameworks/unity.html) for writing structured tests
+- Leverage [doctest](https://github.com/doctest/doctest) for fast, expressive C++ unit tests
 - Split logic into testable components for better design
 
 ---
