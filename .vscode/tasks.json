@@ -5,12 +5,16 @@
       "label": "Build Native",
       "type": "shell",
       "command": "platformio",
-      "args": ["test", "-e", "native", "--without-testing"],
+      "args": [
+        "test",
+        "-e",
+        "native",
+        "--without-testing"
+      ],
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": []
     }
   ]
 }
